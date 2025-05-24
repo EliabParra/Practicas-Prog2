@@ -8,20 +8,36 @@
 
 using namespace std;
 
+void buscarPalabra(string palabra, string nombreArchivo);
 void setColor(string color);
 string toLower(string str);
 
 int main() {
     setlocale(LC_ALL, "spanish");
+    char op;
 
-    ifstream archivo("ejemplo.txt");
+    do {
+        string palabra;
+        cout << "Ingrese la palabra a buscar: ";
+        cin >> palabra;
+        palabra = toLower(palabra);
+        buscarPalabra(palabra, "ejemplo.txt");
+        cout << "\nDesea buscar otra palabra? (s/n): ";
+        cin >> op;
+        system("cls");
+    } while(op == 's' || op == 'S');
+
+    return 0;
+}
+
+void buscarPalabra(string palabra, string nombreArchivo) {
+    ifstream archivo(nombreArchivo);
     int totalCoincidencias = 0;
     if (archivo.is_open()) {
         string linea;
         cout << "Contenido del archivo:\n";
         while (getline(archivo, linea)) {
             string lineaLower = toLower(linea);
-            string palabra = "a";
             size_t pos = 0, lastPos = 0;
             while ((pos = lineaLower.find(palabra, lastPos)) != string::npos) {
                 // Imprimir texto antes de la coincidencia
