@@ -11,6 +11,7 @@ struct Persona {
     char apellido[50];
     int ci;
     int edad;
+    float iq;
 };
 
 const string ARCHIVO = "personas.dat";
@@ -20,6 +21,7 @@ void mostrarPersona(Persona p) {
     cout << "Apellido: " << p.apellido << endl;
     cout << "Cedula: " << p.ci << endl;
     cout << "Edad: " << p.edad << " años" << endl;
+    cout << "IQ: " << p.iq << endl;
 }
 
 void agregarPersona() {
