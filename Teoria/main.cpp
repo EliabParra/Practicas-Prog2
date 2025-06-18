@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <unordered_map> // NUEVO: Para el índice en memoria
 
 using namespace std;
 
@@ -16,6 +17,23 @@ struct Persona {
 
 const string ARCHIVO = "personas.dat";
 
+// NUEVO: Índice global para acceso rápido por cédula
+unordered_map<int, streampos> indiceCedula;
+
+// NUEVO: Construye el índice en memoria (ci -> posición en archivo)
+void construirIndice() {
+    indiceCedula.clear();
+    ifstream archivo(ARCHIVO, ios::binary);
+    if (!archivo.is_open()) return;
+    Persona p;
+    streampos pos = archivo.tellg();
+    while (archivo.read((char*)&p, sizeof(Persona))) {
+        indiceCedula[p.ci] = pos;
+        pos = archivo.tellg();
+    }
+    archivo.close();
+}
+
 void mostrarPersona(Persona p) {
     cout << "Nombre: " << p.nombre << endl;
     cout << "Apellido: " << p.apellido << endl;
@@ -27,76 +45,69 @@ void mostrarPersona(Persona p) {
 void agregarPersona() {
     Persona p;
     string temp;
-    
+
     cout << "\n=== AGREGAR PERSONA ===" << endl;
     cout << "Nombre: ";
     cin.ignore();
     getline(cin, temp);
     strcpy(p.nombre, temp.c_str());
-    
+
     cout << "Apellido: ";
     getline(cin, temp);
     strcpy(p.apellido, temp.c_str());
-    
+
     cout << "Cedula de Identidad: ";
     cin >> p.ci;
-    
+
     cout << "Edad: ";
     cin >> p.edad;
-    
-    // Verificar si ya existe la cedula
-    ifstream archivo(ARCHIVO, ios::binary);
-    if (archivo.is_open()) {
-        Persona temp_p;
-        while (archivo.read((char*)&temp_p, sizeof(Persona))) {
-            if (temp_p.ci == p.ci) {
-                cout << "Error: Ya existe una persona con esa cedula." << endl;
-                archivo.close();
-                return;
-            }
-        }
-        archivo.close();
+
+    cout << "IQ: ";
+    cin >> p.iq;
+
+    // USO DEL ÍNDICE: Verificar si ya existe la cédula rápidamente
+    if (indiceCedula.find(p.ci) != indiceCedula.end()) {
+        cout << "Error: Ya existe una persona con esa cedula." << endl;
+        return;
     }
-    
+
     // Agregar al archivo
     ofstream archivoSalida(ARCHIVO, ios::binary | ios::app);
     if (archivoSalida.is_open()) {
         archivoSalida.write((char*)&p, sizeof(Persona));
         archivoSalida.close();
         cout << "Persona agregada exitosamente." << endl;
+        // ACTUALIZAR ÍNDICE: Solo para el nuevo registro
+        construirIndice();
     } else {
         cout << "Error al abrir el archivo." << endl;
     }
 }
 
+// USO DEL ÍNDICE: Búsqueda eficiente por cédula
 void buscarPorCedula() {
     int ci;
     cout << "Ingrese la cedula a buscar: ";
     cin >> ci;
-    
+
+    auto it = indiceCedula.find(ci);
+    if (it == indiceCedula.end()) {
+        cout << "No se encontro ninguna persona con cedula " << ci << endl;
+        return;
+    }
+
     ifstream archivo(ARCHIVO, ios::binary);
     if (!archivo.is_open()) {
         cout << "Error al abrir el archivo." << endl;
         return;
     }
-    
+
+    archivo.seekg(it->second);
     Persona p;
-    bool encontrada = false;
-    
-    while (archivo.read((char*)&p, sizeof(Persona))) {
-        if (p.ci == ci) {
-            cout << "\n=== PERSONA ENCONTRADA ===" << endl;
-            mostrarPersona(p);
-            encontrada = true;
-            break;
-        }
-    }
-    
+    archivo.read((char*)&p, sizeof(Persona));
+    cout << "\n=== PERSONA ENCONTRADA ===" << endl;
+    mostrarPersona(p);
     archivo.close();
-    
-    if (!encontrada) {
-        cout << "No se encontro ninguna persona con cedula " << ci << endl;
-    }
 }
 
 void listarPersonas() {
@@ -105,22 +116,22 @@ void listarPersonas() {
         cout << "Error al abrir el archivo." << endl;
         return;
     }
-    
+
     Persona p;
     int contador = 0;
-    
+
     cout << "\n=== LISTA DE PERSONAS ===" << endl;
     cout << "----------------------------------------" << endl;
-    
+
     while (archivo.read((char*)&p, sizeof(Persona))) {
         contador++;
         cout << "Persona #" << contador << ":" << endl;
         mostrarPersona(p);
         cout << "----------------------------------------" << endl;
     }
-    
+
     archivo.close();
-    
+
     if (contador == 0) {
         cout << "No hay personas registradas." << endl;
     } else {
@@ -132,19 +143,19 @@ void buscarPorEdad() {
     int edad;
     cout << "Ingrese la edad a buscar: ";
     cin >> edad;
-    
+
     ifstream archivo(ARCHIVO, ios::binary);
     if (!archivo.is_open()) {
         cout << "Error al abrir el archivo." << endl;
         return;
     }
-    
+
     Persona p;
     int contador = 0;
-    
+
     cout << "\n=== PERSONAS CON EDAD " << edad << " ===" << endl;
     cout << "----------------------------------------" << endl;
-    
+
     while (archivo.read((char*)&p, sizeof(Persona))) {
         if (p.edad == edad) {
             contador++;
@@ -153,9 +164,9 @@ void buscarPorEdad() {
             cout << "----------------------------------------" << endl;
         }
     }
-    
+
     archivo.close();
-    
+
     if (contador == 0) {
         cout << "No se encontraron personas con edad " << edad << endl;
     } else {
@@ -167,17 +178,17 @@ void eliminarPersona() {
     int ci;
     cout << "Ingrese la cedula de la persona a eliminar: ";
     cin >> ci;
-    
+
     ifstream archivo(ARCHIVO, ios::binary);
     if (!archivo.is_open()) {
         cout << "Error al abrir el archivo." << endl;
         return;
     }
-    
+
     vector<Persona> personas;
     Persona p;
     bool encontrada = false;
-    
+
     // Leer todas las personas excepto la que se va a eliminar
     while (archivo.read((char*)&p, sizeof(Persona))) {
         if (p.ci == ci) {
@@ -189,12 +200,12 @@ void eliminarPersona() {
         }
     }
     archivo.close();
-    
+
     if (!encontrada) {
         cout << "No se encontro ninguna persona con cedula " << ci << endl;
         return;
     }
-    
+
     // Reescribir el archivo sin la persona eliminada
     ofstream archivoSalida(ARCHIVO, ios::binary);
     if (archivoSalida.is_open()) {
@@ -203,6 +214,8 @@ void eliminarPersona() {
         }
         archivoSalida.close();
         cout << "Persona eliminada exitosamente." << endl;
+        // ACTUALIZAR ÍNDICE: Reconstruir después de eliminar
+        construirIndice();
     } else {
         cout << "Error al reescribir el archivo." << endl;
     }
@@ -212,24 +225,24 @@ void editarPersona() {
     int ci;
     cout << "Ingrese la cedula de la persona a editar: ";
     cin >> ci;
-    
+
     ifstream archivo(ARCHIVO, ios::binary);
     if (!archivo.is_open()) {
         cout << "Error al abrir el archivo." << endl;
         return;
     }
-    
+
     vector<Persona> personas;
     Persona p;
     bool encontrada = false;
-    
+
     // Buscar la persona y cargar todas en memoria
     while (archivo.read((char*)&p, sizeof(Persona))) {
         if (p.ci == ci) {
             encontrada = true;
             cout << "\nPersona actual:" << endl;
             mostrarPersona(p);
-            
+
             // Editar los datos
             string temp;
             cout << "\n=== EDITAR DATOS ===" << endl;
@@ -239,29 +252,36 @@ void editarPersona() {
             if (temp.length() > 0) {
                 strcpy(p.nombre, temp.c_str());
             }
-            
+
             cout << "Nuevo apellido (actual: " << p.apellido << "): ";
             getline(cin, temp);
             if (temp.length() > 0) {
                 strcpy(p.apellido, temp.c_str());
             }
-            
+
             cout << "Nueva edad (actual: " << p.edad << ", 0 para no cambiar): ";
             int nuevaEdad;
             cin >> nuevaEdad;
             if (nuevaEdad > 0) {
                 p.edad = nuevaEdad;
             }
+
+            cout << "Nuevo IQ (actual: " << p.iq << ", 0 para no cambiar): ";
+            float nuevoIq;
+            cin >> nuevoIq;
+            if (nuevoIq > 0) {
+                p.iq = nuevoIq;
+            }
         }
         personas.push_back(p);
     }
     archivo.close();
-    
+
     if (!encontrada) {
         cout << "No se encontro ninguna persona con cedula " << ci << endl;
         return;
     }
-    
+
     // Reescribir el archivo con los datos actualizados
     ofstream archivoSalida(ARCHIVO, ios::binary);
     if (archivoSalida.is_open()) {
@@ -270,6 +290,8 @@ void editarPersona() {
         }
         archivoSalida.close();
         cout << "Datos actualizados exitosamente." << endl;
+        // ACTUALIZAR ÍNDICE: Reconstruir después de editar
+        construirIndice();
     } else {
         cout << "Error al actualizar el archivo." << endl;
     }
@@ -281,21 +303,21 @@ void personasMayorEdad() {
         cout << "Error al abrir el archivo." << endl;
         return;
     }
-    
+
     vector<Persona> personas;
     Persona p;
-    
+
     // Cargar todas las personas
     while (archivo.read((char*)&p, sizeof(Persona))) {
         personas.push_back(p);
     }
     archivo.close();
-    
+
     if (personas.size() == 0) {
         cout << "No hay personas registradas." << endl;
         return;
     }
-    
+
     // Encontrar la edad maxima
     int edadMaxima = personas[0].edad;
     for (int i = 1; i < personas.size(); i++) {
@@ -303,11 +325,11 @@ void personasMayorEdad() {
             edadMaxima = personas[i].edad;
         }
     }
-    
+
     // Mostrar todas las personas con la edad maxima
     cout << "\n=== PERSONA(S) CON MAYOR EDAD (" << edadMaxima << " años) ===" << endl;
     cout << "----------------------------------------" << endl;
-    
+
     int contador = 0;
     for (int i = 0; i < personas.size(); i++) {
         if (personas[i].edad == edadMaxima) {
@@ -337,11 +359,13 @@ void mostrarMenu() {
 
 int main() {
     int opcion;
-    
+
+    construirIndice(); // NUEVO: Construir el índice al iniciar
+
     do {
         mostrarMenu();
         cin >> opcion;
-        
+
         switch (opcion) {
             case 1:
                 agregarPersona();
@@ -370,14 +394,14 @@ int main() {
             default:
                 cout << "Opcion invalida. Seleccione del 1 al 8." << endl;
         }
-        
+
         if (opcion != 8) {
             cout << "\nPresione Enter para continuar...";
             cin.ignore();
             cin.get();
         }
-        
+
     } while (opcion != 8);
-    
+
     return 0;
 }
