@@ -145,6 +145,8 @@ public:
     void showPublications() const {
         if (size == 0) {
             cout << "No hay publicaciones en el catalogo." << endl;
+            system("pause");
+            system("cls");
             return;
         }
         cout << "\n=== CATALOGO COMPLETO ===" << endl;
@@ -153,6 +155,8 @@ public:
             publications[i]->displayInfo();
             cout << string(40, '-') << endl;
         }
+        system("pause");
+        system("cls");
     }
 
     // busca publicaciones por titulo
@@ -175,6 +179,8 @@ public:
         if (!found) {
             cout << "No se encontraron publicaciones con ese titulo." << endl;
         }
+        system("pause");
+        system("cls");
     }
 
     // elimina una publicacion por indice
@@ -195,6 +201,8 @@ public:
     void showStats() const {
         if (size == 0) {
             cout << "No hay publicaciones para mostrar estadisticas." << endl;
+            system("pause");
+            system("cls");
             return;
         }
         int books = 0, magazines = 0, newspapers = 0;
@@ -215,6 +223,8 @@ public:
         cout << "Periodicos: " << newspapers << endl;
         cout << "Anio mas antiguo: " << oldest << endl;
         cout << "Anio mas reciente: " << newest << endl;
+        system("pause");
+        system("cls");
     }
 
     int getSize() const { return size; }
@@ -239,6 +249,7 @@ bool validateText(const string& text) {
 
 // muestra el menu principal
 void showMainMenu() {
+    system("cls");
     cout << "\n" << string(50, '=') << endl;
     cout << "    SISTEMA DE GESTION DE BIBLIOTECA" << endl;
     cout << string(50, '=') << endl;
@@ -254,6 +265,7 @@ void showMainMenu() {
 
 // muestra el submenu para agregar
 void showAddSubmenu() {
+    system("cls");
     cout << "\n=== AGREGAR PUBLICACION ===" << endl;
     cout << "1. Libro" << endl;
     cout << "2. Revista" << endl;
@@ -288,6 +300,7 @@ Publication* createBook() {
         if (!validatePages(pages)) cout << "El numero de paginas debe ser mayor que 0." << endl;
     } while (!validatePages(pages));
     cin.ignore();
+    system("cls");
     return new Book(title, author, year, pages);
 }
 
@@ -317,6 +330,7 @@ Publication* createMagazine() {
         if (!validateEdition(edition)) cout << "El numero de edicion debe ser mayor que 0." << endl;
     } while (!validateEdition(edition));
     cin.ignore();
+    system("cls");
     return new Magazine(title, author, year, edition);
 }
 
@@ -351,6 +365,7 @@ Publication* createNewspaper() {
         getline(cin, city);
         if (!validateText(city)) cout << "La ciudad no puede estar vacia." << endl;
     } while (!validateText(city));
+    system("cls");
     return new Newspaper(title, author, year, date, city);
 }
 
@@ -359,6 +374,8 @@ int main() {
     Catalog catalog;
     int option;
     cout << "Bienvenido al Sistema de Gestion de Biblioteca!" << endl;
+    system("pause");
+    system("cls");
     do {
         showMainMenu();
         cin >> option;
@@ -376,11 +393,13 @@ int main() {
                         case 2: newPub = createMagazine(); break;
                         case 3: newPub = createNewspaper(); break;
                         case 4: break;
-                        default: cout << "Opcion invalida." << endl; continue;
+                        default: cout << "Opcion invalida." << endl; system("pause"); system("cls"); continue;
                     }
                     if (newPub != nullptr) {
                         catalog.addPublication(newPub);
                         cout << "\nPublicacion agregada exitosamente!" << endl;
+                        system("pause");
+                        system("cls");
                         break;
                     }
                 } while (type != 4);
@@ -399,6 +418,8 @@ int main() {
             case 4: {
                 if (catalog.getSize() == 0) {
                     cout << "No hay publicaciones para eliminar." << endl;
+                    system("pause");
+                    system("cls");
                     break;
                 }
                 catalog.showPublications();
@@ -417,6 +438,8 @@ int main() {
                 } else {
                     cout << "Eliminacion cancelada." << endl;
                 }
+                system("pause");
+                system("cls");
                 break;
             }
             case 5:
@@ -429,12 +452,16 @@ int main() {
                 if (confirm == 's' || confirm == 'S') {
                     cout << "Cerrando el programa..." << endl;
                     cout << "Gracias por usar el Sistema de Gestion de Biblioteca!" << endl;
+                    system("pause");
                 } else {
                     option = 0;
+                    system("cls");
                 }
                 break;
             default:
                 cout << "Opcion invalida. Intente nuevamente." << endl;
+                system("pause");
+                system("cls");
         }
     } while (option != 6);
 
