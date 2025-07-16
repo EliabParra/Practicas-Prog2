@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
-#include <unordered_map> // NUEVO: Para el índice en memoria
+#include <unordered_map>
 
 using namespace std;
 
