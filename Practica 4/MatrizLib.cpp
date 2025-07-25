@@ -1,7 +1,6 @@
 #include "MatrizLib.hpp"
 #include <iostream>
 #include <iomanip>
-#include <stdexcept>
 #include <cmath>
 
 // Constructor por defecto
@@ -10,7 +9,7 @@ Matriz::Matriz() : datos(nullptr), filas(0), columnas(0) {}
 // Constructor parametrizado
 Matriz::Matriz(int f, int c) : filas(f), columnas(c) {
     if (f <= 0 || c <= 0) {
-        std::cout << "Las dimensiones deben ser positivas";
+        std::cerr << "Error: Las dimensiones deben ser positivas. Creando matriz vacía.\n";
         return;
     }
     asignarMemoria();
@@ -129,8 +128,8 @@ void Matriz::mostrarMatriz() const {
 // Calcular transpuesta
 Matriz Matriz::transpuesta() const {
     if (datos == nullptr) {
-        std::cout << "No se puede calcular transpuesta de matriz vacía";
-        return;
+        std::cerr << "Error: No se puede calcular transpuesta de matriz vacía.\n";
+        return Matriz(); // Retorna matriz vacía
     }
     
     Matriz resultado(columnas, filas);
@@ -147,13 +146,13 @@ Matriz Matriz::transpuesta() const {
 // Calcular determinante
 double Matriz::determinante() const {
     if (datos == nullptr) {
-        std::cout << "No se puede calcular determinante de matriz vacía";
-        return;
+        std::cerr << "Error: No se puede calcular determinante de matriz vacía.\n";
+        return 0.0; // Retorna 0 o NAN
     }
     
     if (filas != columnas) {
-        std::cout << "El determinante solo se puede calcular para matrices cuadradas";
-        return;
+        std::cerr << "Error: El determinante solo se puede calcular para matrices cuadradas.\n";
+        return 0.0; // Retorna 0 o NAN
     }
     
     return calcularDeterminante(datos, filas);
@@ -209,13 +208,13 @@ void Matriz::crearSubmatriz(double** matriz, double** submatriz, int fila, int c
 // Suma de matrices
 Matriz Matriz::suma(const Matriz& otra) const {
     if (datos == nullptr || otra.datos == nullptr) {
-        std::cout << "No se pueden sumar matrices vacías";
-        return;
+        std::cerr << "Error: No se pueden sumar matrices vacías.\n";
+        return Matriz(); // Retorna matriz vacía
     }
     
     if (filas != otra.filas || columnas != otra.columnas) {
-        std::cout << "Las matrices deben tener las mismas dimensiones para la suma";
-        return;
+        std::cerr << "Error: Las matrices deben tener las mismas dimensiones para la suma.\n";
+        return Matriz(); // Retorna matriz vacía
     }
     
     Matriz resultado(filas, columnas);
@@ -232,13 +231,13 @@ Matriz Matriz::suma(const Matriz& otra) const {
 // Multiplicación de matrices
 Matriz Matriz::multiplicacion(const Matriz& otra) const {
     if (datos == nullptr || otra.datos == nullptr) {
-        std::cout << "No se pueden multiplicar matrices vacías";
-        return;
+        std::cerr << "Error: No se pueden multiplicar matrices vacías.\n";
+        return Matriz(); // Retorna matriz vacía
     }
     
     if (columnas != otra.filas) {
-        std::cout << "El número de columnas de la primera matriz debe ser igual al número de filas de la segunda";
-        return;
+        std::cerr << "Error: El número de columnas de la primera matriz debe ser igual al número de filas de la segunda.\n";
+        return Matriz(); // Retorna matriz vacía
     }
     
     Matriz resultado(filas, otra.columnas);
@@ -282,7 +281,7 @@ bool Matriz::esIgual(const Matriz& otra) const {
 }
 
 // Añadir una fila a la matriz
-void Matriz::añadirFila() {
+void Matriz::addFila() {
     if (datos == nullptr) {
         std::cout << "No se puede añadir fila a matriz vacía";
         return;
@@ -314,7 +313,7 @@ void Matriz::añadirFila() {
 }
 
 // Añadir una columna a la matriz
-void Matriz::añadirColumna() {
+void Matriz::addColumna() {
     if (datos == nullptr) {
         std::cout << "No se puede añadir columna a matriz vacía";
         return;
@@ -346,16 +345,16 @@ void Matriz::añadirColumna() {
 // Getter para elemento específico
 double Matriz::getElemento(int i, int j) const {
     if (i < 0 || i >= filas || j < 0 || j >= columnas) {
-        std::cout << "Índices fuera de rango";
-        return;
+        std::cerr << "Error: Índices fuera de rango.\n";
+        return 0.0; // O NAN
     }
     return datos[i][j];
 }
 
 // Setter para elemento específico
 void Matriz::setElemento(int i, int j, double valor) {
-    if (i < 0 || i >= filas || j < 0 || j >= columnas) {
-        std::cout << "Índices fuera de rango";
+    if (datos == nullptr || i < 0 || i >= filas || j < 0 || j >= columnas) {
+        std::cerr << "Error: Índices fuera de rango o matriz no inicializada.\n";
         return;
     }
     datos[i][j] = valor;
@@ -365,8 +364,8 @@ void Matriz::setElemento(int i, int j, double valor) {
 namespace MatrizLib {
     Matriz crearMatriz(int filas, int columnas) {
         if (filas <= 0 || columnas <= 0) {
-            std::cout << "Las dimensiones deben ser positivas";
-            return;
+            std::cerr << "Error: Las dimensiones deben ser positivas. Se creará una matriz vacía.\n";
+            return Matriz(); // Retorna una matriz vacía por defecto
         }
         
         return Matriz(filas, columnas);

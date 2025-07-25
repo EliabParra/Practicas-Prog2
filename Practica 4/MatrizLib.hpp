@@ -2,7 +2,6 @@
 #define MATRIZ_HPP
 
 #include <iostream>
-#include <stdexcept>
 #include <iomanip>
 
 class Matriz {
@@ -34,8 +33,8 @@ public:
     Matriz multiplicacion(const Matriz& otra) const;
     bool esIgual(const Matriz& otra) const;
     
-    void añadirFila();
-    void añadirColumna();
+    void addFila();
+    void addColumna();
     
     int getFilas() const { return filas; }
     int getColumnas() const { return columnas; }
